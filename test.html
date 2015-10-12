@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <!--<script src="util.js"></script>-->
+    <script src="js/phaser.js"></script>
+    <script src="js/Boot.js"></script>
+    <script src="js/Preloader.js"></script>
+    <script src="js/Game.js"></script>
+    <script src="js/SpacePhyics.js"></script>
+    <script src="js/MyShip.js"></script>
+    <script src="js/jquery-1.11.3.min.js"></script>
+
+    <link rel="stylesheet" href="css/space.css" type="text/css">
+
+</head>
+<body>
+
+<script>
+
+    var enemy;
+    var cube;
+
+    var table;
+    var tableSprite;
+
+    var canvasZoom = 20;
+    var spriteWidth = 20;
+    var spriteHeight = 20;
+
+    var isDown, isErase;
+
+    var color = "#000";
+
+    var structure = [], ship_structure, enemy_structure;
+    var enemy_cubes = [];
+
+    var game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.CANVAS, 'space');
+
+    game.state.add('Boot', Space.Boot);
+    game.state.add('Preloader', Space.Preloader);
+    game.state.add('Game', Space.Game);
+    game.state.start('Boot');
+
+    function hit_enemy(bullet, enemy) {
+        console.log('hit_enemy');
+        bullet.kill();
+    }
+
+</script>
+
+<script>
+    $(document).ready(function () {
+        $('#switch_ship_structure td').on('click', function () {
+            $(this).addClass('active');
+        });
+
+        window.applyEnemyStructure = function () {
+
+            var enemy_cubes = SpacePhysics.spawnShip(Space.structure_from_grid);
+            for(cube in enemy_cubes){
+                MyShip.targets.push(enemy_cubes[cube]);
+            }
+        };
+
+        window.applyShipStructure = function () {
+            Space.myShip.structure = Space.structure_from_grid;
+            var my_group = SpacePhysics.spawnMyShip(Space.myShip.structure);
+            var min_x, max_x, min_y, max_y;
+            for(var i in my_group.children){
+
+            }
+            console.log(my_group);
+            game.input.onDown.add(function (pointer) {
+                if (pointer.rightButton.isDown) {
+                    SpacePhysics.fire('bullet', my_group, MyShip.targets);
+                }
+                else {
+                    SpacePhysics.rotationToPointer(my_group);
+                    var obj = SpacePhysics.moveGroup(my_group, 100);
+
+                    Space.myShip.position = obj.position;
+                    Space.myShip.body = obj.body;
+//                    console.log(body);
+                }
+
+            }, this);
+        };
+    });
+
+    function createDrawingArea() {
+
+        game.create.grid('drawingGrid', canvasZoom * canvasZoom, canvasZoom * canvasZoom, canvasZoom, canvasZoom, 'rgba(0,191,243,0.8)');
+
+        table = game.make.bitmapData(spriteWidth * canvasZoom, spriteHeight * canvasZoom);
+        var canvasBG = game.make.bitmapData(table.width + 2, table.height + 2);
+
+        canvasBG.rect(0, 0, canvasBG.width, canvasBG.height, '#fff');
+        canvasBG.rect(1, 1, canvasBG.width - 2, canvasBG.height - 2, '#3f5c67');
+
+        var x = 10;
+        var y = 164;
+
+        canvasBG.addToWorld(x, y);
+        tableSprite = table.addToWorld(x + 1, y + 1);
+        var canvasGrid = game.add.sprite(x + 1, y + 1, 'drawingGrid');
+        canvasGrid.crop(new Phaser.Rectangle(0, 0, spriteWidth * canvasZoom, spriteHeight * canvasZoom));
+
+    }
+
+    function createEventListeners() {
+
+        var keys = game.input.keyboard.addKeys(
+                {
+                    'up': Phaser.Keyboard.UP,
+                    'down': Phaser.Keyboard.DOWN
+                }
+        );
+
+//        keys.up.onDown.add(shiftUp, this);
+//        keys.down.onDown.add(shiftDown, this);
+
+
+        game.input.mouse.capture = true;
+        game.input.onDown.add(onDown, this);
+        game.input.onUp.add(onUp, this);
+        game.input.addMoveCallback(function (pointer) {
+            paint(pointer)
+        }, this);
+
+    }
+
+    function onDown(pointer) {
+
+        isDown = true;
+
+        if (pointer.rightButton.isDown) {
+            isErase = true;
+        }
+        else {
+            isErase = false;
+        }
+
+        paint(pointer);
+
+    }
+
+    function onUp() {
+        isDown = false;
+    }
+
+    function paint(pointer) {
+
+        //  Get the grid loc from the pointer
+        var x = game.math.snapToFloor(pointer.x - tableSprite.x, canvasZoom) / canvasZoom;
+        var y = game.math.snapToFloor(pointer.y - tableSprite.y, canvasZoom) / canvasZoom;
+
+
+        if (x < 0 || x >= spriteWidth || y < 0 || y >= spriteHeight) {
+            return;
+        }
+
+//        coords.text = "X: " + x + "\tY: " + y;
+
+        if (!isDown) {
+            return;
+        }
+
+        if (isErase) {
+            Space.structure_from_grid[y][x] = '';
+            table.clear(x * canvasZoom, y * canvasZoom, canvasZoom, canvasZoom, color);
+        }
+        else {
+            Space.structure_from_grid[y][x] = 1;
+            table.rect(x * canvasZoom, y * canvasZoom, canvasZoom, canvasZoom, color);
+        }
+
+    }
+
+    function resetData(structure) {
+
+        structure = [];
+
+        for (var y = 0; y < spriteHeight; y++) {
+            var a = [];
+
+            for (var x = 0; x < spriteWidth; x++) {
+                a.push('');
+            }
+
+            structure.push(a);
+        }
+        return structure;
+
+    }
+</script>
+
+
+<button id="apply" onclick="applyShipStructure()">
+    Create ship
+</button>
+<button id="apply_enemy" onclick="applyEnemyStructure()">
+    Create enemy ship
+</button>
+
+
+</body>
+</html>
