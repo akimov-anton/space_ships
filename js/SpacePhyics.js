@@ -5,7 +5,7 @@ var SpacePhysics = {
         var group = game.add.group();
         var x = 600, y = 300;
         var offset_y, offset_x;
-        var side = 15;
+        var side = 10;
         group.x = x;
         group.y = y;
         group.pivot.x = x + ship_structure.length / 2 * side;
@@ -43,7 +43,7 @@ var SpacePhysics = {
         var group = game.add.group();
         var x = 800, y = 300;
         var offset_y, offset_x;
-        var side = 15;
+        var side = 10;
         group.x = x;
         group.y = y;
         group.pivot.x = x + structure.length / 2 * side;
@@ -83,7 +83,7 @@ var SpacePhysics = {
         var x = game.input.position.x;
         var y = game.input.position.y;
 
-        this.moveTo(bullet, x, y, 500);
+        this.moveTo(bullet, x, y, 1000);
     },
     moveTo: function (obj, x, y, velocity) {
         if (!velocity)
@@ -91,14 +91,14 @@ var SpacePhysics = {
 //        game.camera.follow(obj);
 //        var x = obj.offset_x ? game.input.position.x + obj.offset_x : game.input.position.x;
 //        var y = obj.offset_y ? game.input.position.y + obj.offset_y : game.input.position.y;
-        game.physics.arcade.moveToXY(obj, x, y, velocity);
-//        game.physics.arcade.moveToPointer(obj, velocity);
+//        game.physics.arcade.moveToXY(obj, x, y, velocity);
+        game.physics.arcade.moveToPointer(obj, velocity);
     },
     rotationToPointer: function (obj) {
         obj.rotation = game.physics.arcade.angleToPointer(obj);
         obj.angle += 90;
     },
-    moveGroup: function (group, velocity) {
+    moveGroup: function (group, target, velocity) {
         // TODO: kill temp_obj
         var temp_obj = game.add.sprite(group.x, group.y, 'block');
         game.physics.enable(temp_obj, Phaser.Physics.ARCADE);
@@ -109,5 +109,11 @@ var SpacePhysics = {
         group.position = temp_obj.position;
         game.physics.arcade.moveToPointer(temp_obj, velocity);
         return temp_obj;
+
+        //var rotation = game.math.angleBetween(group.x, group.y, game.input.position.x, game.input.position.y);
+        //
+        //// Calculate velocity vector based on rotation and this.MAX_SPEED
+        //group.position.x = Math.cos(rotation) * velocity;
+        //group.position.y = Math.sin(rotation) * velocity;
     }
 };

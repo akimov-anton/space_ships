@@ -50,21 +50,17 @@ Space.Game.prototype = {
             this.physics.arcade.collide(bullet, target, cb, null, this);
         }
 
-        if (this.target_position.x) {
-//            console.log(this.target_position);
-//            console.log(Space.myShip.position);
-
-            if (Phaser.Rectangle.contains(Space.myShip.body, this.target_position.x, this.target_position.y))
-                console.log('On place');
-//                Space.myShip.body.velocity.setTo(0, 0);
+        var distance = this.game.math.distance(Space.myShip.position.x, Space.myShip.position.y, this.target_position.x, this.target_position.y);
+        if(distance < 1){
+            Space.myShip.body.velocity.setTo(0, 0);
         }
 
-//        if (!game.camera.atLimit.x) {
-//            this.background.tilePosition.x -= (ship.body.velocity.x * this.time.physicsElapsed);
-//        }
-//
-//        if (!game.camera.atLimit.y) {
-//            this.background.tilePosition.y -= (ship.body.velocity.y * this.time.physicsElapsed);
-//        }
+        if (!game.camera.atLimit.x && Space.myShip.body.velocity) {
+            this.background.tilePosition.x -= (Space.myShip.body.velocity.x * this.time.physicsElapsed);
+        }
+
+        if (!game.camera.atLimit.y && Space.myShip.body.velocity) {
+            this.background.tilePosition.y -= (Space.myShip.body.velocity.y * this.time.physicsElapsed);
+        }
     }
 };
