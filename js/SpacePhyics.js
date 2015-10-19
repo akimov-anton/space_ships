@@ -5,7 +5,7 @@ var SpacePhysics = {
         var group = game.add.group();
         var x = 600, y = 300;
         var offset_y, offset_x;
-        var side = 10;
+        var side = 15;
         group.x = x;
         group.y = y;
         group.pivot.x = x + ship_structure.length / 2 * side;
@@ -43,7 +43,7 @@ var SpacePhysics = {
         var group = game.add.group();
         var x = 800, y = 300;
         var offset_y, offset_x;
-        var side = 10;
+        var side = 15;
         group.x = x;
         group.y = y;
         group.pivot.x = x + structure.length / 2 * side;
@@ -67,25 +67,33 @@ var SpacePhysics = {
         group.physicsBodyType = Phaser.Physics.ARCADE;
         return cubes;
     },
-    fire: function (bullet, ship, target) {
-        var bullet = game.add.sprite(-100, -100, bullet);
-        bullet.anchor.setTo(0.5, 0.5);
+    fire: function (pool, gun) {
+        var bullet = pool.getFirstDead();
+        if (bullet === null || bullet === undefined) return;
+        bullet.revive();
+        bullet.checkWorldBounds = true;
+        bullet.outOfBoundsKill = true;
+//        var bullet = game.add.sprite(-100, -100, bullet);
+//        bullet.anchor.setTo(0.5, 0.5);
 
-        game.physics.enable(bullet, Phaser.Physics.ARCADE);
-        bullet.enableBody = true;
+//        game.physics.enable(bullet, Phaser.Physics.ARCADE);
+//        bullet.enableBody = true;
 
-        Space.myShip.shots.push({bullet: bullet, target: target, cb: hit_enemy});
-
-        bullet.position.x = ship.position.x;
-        bullet.position.y = ship.position.y;
-        bullet.rotation = game.physics.arcade.angleToPointer(bullet);
+//        Space.myShip.shots.push({bullet: bullet, target: target, cb: hit_enemy});
+        bullet.reset(gun.position.x, gun.position.y);
+//        bullet.position.x = ship.position.x;
+//        bullet.position.y = ship.position.y;
+//        bullet.rotation = game.physics.arcade.angleToPointer(bullet)+90;
+        this.rotationToPointer(bullet);
+//        debugger;
 
         var x = game.input.position.x;
         var y = game.input.position.y;
 
-        this.moveTo(bullet, x, y, 1000);
+        this.moveToPointer(bullet, x, y, 1000);
+        return bullet;
     },
-    moveTo: function (obj, x, y, velocity) {
+    moveToPointer: function (obj, x, y, velocity) {
         if (!velocity)
             velocity = 200;
 //        game.camera.follow(obj);

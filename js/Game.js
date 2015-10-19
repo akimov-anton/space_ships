@@ -2,6 +2,7 @@ Space.Game = function (game) {
     this.background = null;
     this.target_position = {};
     Space.structure_from_grid = {};
+    Space.CUBE_SIDE = 15;
 };
 Space.Game.prototype = {
     create: function () {
@@ -25,6 +26,7 @@ Space.Game.prototype = {
         this.background = background;
 
         Space.myShip = MyShip;
+        Space.myShip.shots = game.add.group();
 
 //      Space.ship = this.add.sprite(400, 300, 'ship');
 //
@@ -42,16 +44,38 @@ Space.Game.prototype = {
         Space.structure_from_grid = resetData();
     },
     update: function () {
-        var shots = Space.myShip.shots;
-        for (var i in shots) {
-            var bullet = shots[i].bullet;
-            var target = shots[i].target;
-            var cb = shots[i].cb;
-            this.physics.arcade.collide(bullet, target, cb, null, this);
-        }
+//        var shots = Space.myShip.shots;
+//        for (var i in shots) {
+//            var bullet = shots[i].bullet;
+//            var target = MyShip.targets;
+//            var cb = shots[i].cb;
+        var cb = function (target, bullet) {
+            bullet.kill();
+        };
+        this.physics.arcade.collide(Space.myShip.shots, MyShip.targets, cb, null, this);
+//            if(shots[i].bullet.position.x > game.width ||
+//                shots[i].bullet.position.y > game.height || shots[i].bullet.position.x < 0 ||
+//                shots[i].bullet.position.y < 0){
+//                shots[i].bullet.kill();
+//            }
+//            if(Space.myShip.collided_targets.length){
+//                for(var j in Space.myShip.collided_targets){
+//                    var obj = Space.myShip.collided_targets[j];
+//                    if(obj.x < 0 || obj.y < 0 ||
+//                        obj.x < game.width || obj.y < game.height){
+//                        obj.kill();
+////                        console.log(obj);
+//                    }
+//                }
+//            }
+//            if(shots[i].target.position.x > game.width ||
+//                shots[i].target.position.y > game.height){
+//                shots[i].target.kill();
+//            }
+//        }
 
         var distance = this.game.math.distance(Space.myShip.position.x, Space.myShip.position.y, this.target_position.x, this.target_position.y);
-        if(distance < 1){
+        if (distance < 1) {
             Space.myShip.body.velocity.setTo(0, 0);
         }
 

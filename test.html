@@ -58,7 +58,8 @@
         window.applyEnemyStructure = function () {
 
             var enemy_cubes = SpacePhysics.spawnShip(Space.structure_from_grid);
-            for(cube in enemy_cubes){
+            for (cube in enemy_cubes) {
+                //возможно стоит попробовать с группами
                 MyShip.targets.push(enemy_cubes[cube]);
             }
         };
@@ -66,14 +67,29 @@
         window.applyShipStructure = function () {
             Space.myShip.structure = Space.structure_from_grid;
             var my_group = SpacePhysics.spawnMyShip(Space.myShip.structure);
-            var min_x, max_x, min_y, max_y;
-            for(var i in my_group.children){
+            Space.myShip.group = my_group;
+            for (var i = 0; i < 20; i++) {
+                // Create each bullet and add it to the group.
+                var bullet = game.add.sprite(0, 0, 'bullet');
+                Space.myShip.shots.add(bullet);
+                bullet.anchor.setTo(0.5, 0.5);
+                game.physics.enable(bullet, Phaser.Physics.ARCADE);
 
+                bullet.kill();
             }
-            console.log(my_group);
+            var gun_place = my_group.getChildAt(0);
+            var gun1 = my_group.create(gun_place.position.x, gun_place.position.y, 'gun_01');
+            gun1.position.y = gun1.y + Space.CUBE_SIDE / 2;
+            gun1.position.x = gun1.x + Space.CUBE_SIDE / 2;
+            gun1.anchor.setTo(0.5, 1);
+            var min_x, max_x, min_y, max_y;
             game.input.onDown.add(function (pointer) {
                 if (pointer.rightButton.isDown) {
-                    SpacePhysics.fire('bullet', my_group, MyShip.targets);
+                    SpacePhysics.fire(Space.myShip.shots, {
+                        position: {
+                            x: gun1.body.x + gun1.width / 2,
+                            y: gun1.body.y + gun1.height}
+                    });
                 }
                 else {
                     SpacePhysics.rotationToPointer(my_group);
@@ -81,10 +97,18 @@
 
                     Space.myShip.position = obj.position;
                     Space.myShip.body = obj.body;
-//                    console.log(body);
                 }
 
             }, this);
+            game.input.mouse.mouseMoveCallback = function () {
+                gun1.rotation = game.physics.arcade.angleToPointer({
+                    x: gun1.body.x + gun1.width / 2,
+                    y: gun1.body.y + gun1.height
+                });
+//                gun1.rotation = game.physics.arcade.angleToXY(gun_place.body, game.input.position.x, game.input.position.y);
+//                gun1.rotation = game.physics.arcade.angleBetween(gun_place.body, game.input.position);
+                gun1.angle += 90 - my_group.angle;
+            };
         };
     });
 
